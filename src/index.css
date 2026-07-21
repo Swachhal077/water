@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+@theme {
+  /* MODI — glacial drench. Brand hue preserved from the label (#2180c8),
+     extended into a deep "glacier" ground and an ice tint. Orange from
+     the logo carries the delivery story only. */
+  --color-brand: #2180c8;
+  --color-brand-deep: #16639c;
+  --color-glacier: #0b2740;
+  --color-glacier-deep: #071b2c;
+  --color-ink: #14283c;
+  --color-ink-mute: #46617a;
+  --color-ice: #eef4f9;
+  --color-line: #d9e4ee;
+  --color-accent: #f0662d;
+
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Type voices — one family, three cuts of the Archivo width/weight axes. */
+@utility type-display {
+  font-stretch: 125%;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+@utility type-data {
+  font-stretch: 68%;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@utility type-label {
+  font-stretch: 110%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+/* Scroll reveals: content is fully visible by default; the animation only
+   plays once the observer adds .is-in, so no-JS and headless still render. */
+[data-reveal].is-in {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.hero-rise {
+  animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Footer descent: the elevation line draws itself left to right once the
+   profile scrolls in. The dasharray lives on the .is-in rule, so before the
+   observer fires (and without JS) the line is simply visible. */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+[data-reveal].is-in .draw-line {
+  stroke-dasharray: 1;
+  animation: draw-line 2s cubic-bezier(0.45, 0, 0.3, 1) backwards;
+}
+
+/* The stations ride the same clock as the line that draws through them: they
+   are descendants of the profile's single [data-reveal], not observed
+   separately, so a dot can never arrive before the line reaches it. Each one
+   carries its own --station-delay, timed to land just after the stroke has
+   passed its position.
+
+   The dot fades rather than rises — `rise` animates `transform`, which would
+   overwrite the dot's own translate centring and drop it off the line for the
+   length of the animation. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+[data-reveal].is-in .station-dot {
+  animation: fade-in 0.45s ease-out backwards;
+  animation-delay: var(--station-delay, 0ms);
+}
+
+[data-reveal].is-in .station-label {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--station-delay, 0ms) + 120ms);
+}
+
+/* Spec ticker — two identical copies scroll as one track. Each copy carries
+   its own trailing gap (pr-16), so the copies tile exactly and -50% lands
+   seamlessly on the start of the second one. */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* The delivery wheel — the refill loop turns at truck speed, not display
+   speed. */
+@keyframes cap-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.cap-spin {
+  transform-origin: 50% 50%;
+  animation: cap-spin 45s linear infinite;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* The blanket rule above would leave the infinite ticker and the wheel
+     flickering at 0.01ms per cycle — stop them outright, at rest. */
+  .marquee-track,
+  .cap-spin {
+    animation: none !important;
+  }
+}
+
+body {
+  @apply bg-white font-sans text-ink antialiased;
+}
+
+::selection {
+  background: var(--color-brand);
+  color: #fff;
+}
